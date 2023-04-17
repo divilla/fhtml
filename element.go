@@ -12,6 +12,7 @@ type Element struct {
 	IsVoid     bool
 }
 
+// Elm builds HTML Element
 func Elm(t string, as ...*Attribute) *Element {
 	return &Element{
 		Tag:        t,
@@ -32,11 +33,8 @@ func (e *Element) Void() {
 }
 
 func (e *Element) Render(bb *bytes.Buffer, n int) {
-	newLine(bb)
-	indent(bb, n)
-
-	bb.WriteString(`<`)
-	bb.WriteString(e.Tag)
+	newLineIndent(bb, n)
+	writeStrings(bb, `<`, e.Tag)
 
 	for _, attr := range e.Attributes {
 		attr.Render(bb, 0)
@@ -50,13 +48,14 @@ func (e *Element) Render(bb *bytes.Buffer, n int) {
 
 	bb.WriteString(e.InnerHTML)
 
-	for _, elm := range e.Elements {
-		elm.Render(bb, n+1)
+	if len(e.Elements) > 0 {
+		for _, elm := range e.Elements {
+			elm.Render(bb, n+1)
+		}
+		newLineIndent(bb, n)
 	}
 
-	bb.WriteString(`<\`)
-	bb.WriteString(e.Tag)
-	bb.WriteString(`>`)
+	writeStrings(bb, `</`, e.Tag, `>`)
 }
 
 var IndentSize = 4
@@ -82,12 +81,41 @@ func makeIndents(n int) [][]byte {
 	return indents
 }
 
+func writeStrings(bb *bytes.Buffer, ss ...string) {
+	for _, s := range ss {
+		bb.WriteString(s)
+	}
+}
+
 func indent(bb *bytes.Buffer, n int) {
 	bb.Write(indentsBytes[n])
 }
 
+func indentIf(bb *bytes.Buffer, n int, cond bool) {
+	if cond {
+		indent(bb, n)
+	}
+}
+
 func newLine(bb *bytes.Buffer) {
 	bb.Write(newLineByte)
+}
+
+func newLineIf(bb *bytes.Buffer, cond bool) {
+	if cond {
+		newLine(bb)
+	}
+}
+
+func newLineIndent(bb *bytes.Buffer, n int) {
+	newLine(bb)
+	indent(bb, n)
+}
+
+func newLineIndentIf(bb *bytes.Buffer, n int, cond bool) {
+	if cond {
+		newLineIndent(bb, n)
+	}
 }
 
 func startCommentIf(bb *bytes.Buffer, cond bool) {
