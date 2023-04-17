@@ -9,7 +9,6 @@ type Element struct {
 	Attributes []*Attribute
 	Elements   []*Element
 	InnerHTML  string
-	IsComment  bool
 	IsVoid     bool
 }
 
@@ -18,11 +17,6 @@ func Elm(t string, as ...*Attribute) *Element {
 		Tag:        t,
 		Attributes: as,
 	}
-}
-
-func (e *Element) Comment() *Element {
-	e.IsComment = true
-	return e
 }
 
 func (e *Element) Content(s string) {
@@ -40,7 +34,6 @@ func (e *Element) Void() {
 func (e *Element) Render(bb *bytes.Buffer, n int) {
 	newLine(bb)
 	indent(bb, n)
-	startCommentIf(bb, e.IsComment)
 
 	bb.WriteString(`<`)
 	bb.WriteString(e.Tag)
@@ -52,7 +45,6 @@ func (e *Element) Render(bb *bytes.Buffer, n int) {
 	bb.WriteString(`>`)
 
 	if e.IsVoid {
-		endCommentIf(bb, e.IsComment)
 		return
 	}
 
@@ -65,8 +57,6 @@ func (e *Element) Render(bb *bytes.Buffer, n int) {
 	bb.WriteString(`<\`)
 	bb.WriteString(e.Tag)
 	bb.WriteString(`>`)
-
-	endCommentIf(bb, e.IsComment)
 }
 
 var IndentSize = 4
