@@ -1,20 +1,19 @@
-package fhtml
+package main
+
+import "github.com/divilla/fhtml"
 
 type OuterLayout struct {
-	*BaseLayout
+	fhtml.BaseLayout
 }
 
-func NewOuterLayout(content Renderer) *OuterLayout {
-	return &OuterLayout{
-		&BaseLayout{
-			builder: content.Builder(),
-			content: content,
-		},
-	}
+func NewOuterLayout(content fhtml.Renderer) *OuterLayout {
+	l := new(OuterLayout)
+	l.SetContent(content)
+	return l
 }
 
-func (l *OuterLayout) Render() Renderer {
-	b := l.builder
+func (l *OuterLayout) Render() fhtml.Renderer {
+	b := l.Builder()
 	b.D(
 		b.H(`<!DOCTYPE html>`),
 		b.EC(`<html>`).C(
@@ -25,7 +24,7 @@ func (l *OuterLayout) Render() Renderer {
 				b.E(`<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">`),
 			).E(`</head>`),
 			b.EC(`<body>`).C(
-				l.content.Render(),
+				l.Content().Render(),
 			).E(`</body>`),
 		).E(`</html>`),
 	)

@@ -1,23 +1,17 @@
 package main
 
 import (
-	"testing"
+	"fmt"
 
-	"github.com/divilla/fhtml"
 	"github.com/tidwall/sjson"
 )
 
-var result []byte
-
-func Benchmark_Render(b *testing.B) {
-	var j, r []byte
+func main() {
+	var j []byte
 	j, _ = sjson.SetBytes(j, `title`, `Hello Bulma!`)
 	j, _ = sjson.SetBytes(j, `nums`, []int{1, 2, 3, 4, 5, 6})
 	j, _ = sjson.SetBytes(j, `show`, true)
-
-	for n := 0; n < b.N; n++ {
-		r = fhtml.NewView(j).Run()
-	}
-
-	result = r
+	fmt.Println(string(j))
+	v := NewView(j).Run()
+	fmt.Println(string(v))
 }

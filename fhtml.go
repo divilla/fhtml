@@ -5,6 +5,7 @@ type (
 	Renderer interface {
 		Render() Renderer
 		Layout() Renderer
+		SetLayout(layout Renderer) Renderer
 		Builder() *Builder
 		Bytes() []byte
 		String() string

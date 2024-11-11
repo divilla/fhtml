@@ -24,8 +24,18 @@ func (v *BaseView) Layout() Renderer {
 	return v.layout
 }
 
+func (v *BaseView) SetLayout(layout Renderer) Renderer {
+	v.layout = layout
+	return v
+}
+
 func (v *BaseView) Builder() *Builder {
 	return v.builder
+}
+
+func (v *BaseView) SetBuilder(builder *Builder) Renderer {
+	v.builder = builder
+	return v
 }
 
 func (v *BaseView) Bytes() []byte {

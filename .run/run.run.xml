@@ -4,7 +4,7 @@
     <working_directory value="$PROJECT_DIR$" />
     <kind value="DIRECTORY" />
     <package value="github.com/divilla/fhtml" />
-    <directory value="$PROJECT_DIR$/cmd" />
+    <directory value="$PROJECT_DIR$/example" />
     <filePath value="$PROJECT_DIR$" />
     <method v="2" />
   </configuration>
