@@ -1,17 +1,5 @@
 package fhtml
 
-func FindOutermostLayout(layout Renderer) Renderer {
-	if layout == nil {
-		return nil
-	}
-
-	for layout.Layout() != nil {
-		layout = layout.Layout()
-	}
-
-	return layout
-}
-
 type (
 	BaseLayout struct {
 		builder *Builder

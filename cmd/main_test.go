@@ -9,7 +9,7 @@ import (
 
 var result []byte
 
-func BenchmarkE_Parse(b *testing.B) {
+func Benchmark_Render(b *testing.B) {
 	var j, r []byte
 	j, _ = sjson.SetBytes(j, `title`, `Hello Bulma!`)
 	j, _ = sjson.SetBytes(j, `nums`, []int{1, 2, 3, 4, 5, 6})

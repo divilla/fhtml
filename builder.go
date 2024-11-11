@@ -3,6 +3,9 @@ package fhtml
 import (
 	"bytes"
 	"strconv"
+	"strings"
+
+	"github.com/sym01/htmlsanitizer"
 
 	"github.com/tidwall/gjson"
 )
@@ -17,14 +20,6 @@ type (
 		data []byte
 		bb   *bytes.Buffer
 		ind  int
-	}
-
-	Renderer interface {
-		Render() Renderer
-		Layout() Renderer
-		Builder() *Builder
-		Bytes() []byte
-		String() string
 	}
 )
 
@@ -43,6 +38,30 @@ func (b *Builder) H(tokens ...string) *Builder {
 	}
 
 	return b
+}
+
+// HI writes indented raw strings - not sanitized HTML
+func (b *Builder) HI(tokens ...string) *Builder {
+	indent(b.bb, b.ind)
+	return b.H(tokens...)
+}
+
+// T writes sanitized stext
+func (b *Builder) T(tokens ...string) *Builder {
+	s := strings.Join(tokens, ``)
+	ss, err := htmlsanitizer.SanitizeString(s)
+	if err != nil {
+		panic(err)
+	}
+	b.bb.WriteString(ss)
+
+	return b
+}
+
+// TI writes indented sanitized strings
+func (b *Builder) TI(tokens ...string) *Builder {
+	indent(b.bb, b.ind)
+	return b.T(tokens...)
 }
 
 // E is used for writing elements without Children

@@ -1,9 +1,24 @@
 package fhtml
 
-import "bytes"
-
 type (
-	Node interface {
-		Render(bb *bytes.Buffer, n int)
+	// Renderer is interface for layouts, views and components
+	Renderer interface {
+		Render() Renderer
+		Layout() Renderer
+		Builder() *Builder
+		Bytes() []byte
+		String() string
 	}
 )
+
+func FindOutermostLayout(layout Renderer) Renderer {
+	if layout == nil {
+		return nil
+	}
+
+	for layout.Layout() != nil {
+		layout = layout.Layout()
+	}
+
+	return layout
+}
