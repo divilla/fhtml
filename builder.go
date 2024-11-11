@@ -2,8 +2,9 @@ package fhtml
 
 import (
 	"bytes"
-	"github.com/tidwall/sjson"
 	"strings"
+
+	"github.com/tidwall/sjson"
 
 	"github.com/sym01/htmlsanitizer"
 
@@ -17,17 +18,15 @@ var (
 
 type (
 	Builder struct {
-		data []byte
-		bb   *bytes.Buffer
-		ind  int
+		bb  *bytes.Buffer
+		ind int
 	}
 )
 
 // NewBuilder constructs *Builder provided 'data' argument is valid JSON
-func NewBuilder(data []byte) *Builder {
+func NewBuilder() *Builder {
 	return &Builder{
-		data: data,
-		bb:   new(bytes.Buffer),
+		bb: new(bytes.Buffer),
 	}
 }
 
@@ -99,23 +98,28 @@ func (b *Builder) D(a ...any) *Builder {
 	return b
 }
 
-// GetString extracts string value from JSON data for provided path
-func (b *Builder) GetString(path string) string {
-	return gjson.GetBytes(b.data, path).Raw
+// GetString extracts string value from JSON data given provided path
+func (b *Builder) GetString(data []byte, path string) string {
+	return gjson.GetBytes(data, path).Raw
 }
 
-// GetIf extracts bool value from JSON data for provided 'path' and executes 'fn' if result is true
-func (b *Builder) GetIf(path string, fn func()) *Builder {
-	if gjson.GetBytes(b.data, path).Bool() {
+// GetBool extracts bool value from JSON data given provided path
+func (b *Builder) GetBool(data []byte, path string) bool {
+	return gjson.GetBytes(data, path).Bool()
+}
+
+// If executes 'fn' if result of 'expression' is true
+func (b *Builder) If(expression bool, fn func()) *Builder {
+	if expression {
 		fn()
 	}
 
 	return b
 }
 
-// GetForeach extracts array from JSON data for provided 'path' and executes 'fn' for each array member
-func (b *Builder) GetForeach(path string, fn func(key, value gjson.Result)) *Builder {
-	gjson.GetBytes(b.data, path).ForEach(func(key, value gjson.Result) bool {
+// Foreach extracts array from JSON data for provided 'path' and executes 'fn' for each array member
+func (b *Builder) Foreach(data []byte, path string, fn func(key, value gjson.Result)) *Builder {
+	gjson.GetBytes(data, path).ForEach(func(key, value gjson.Result) bool {
 		fn(key, value)
 		return true
 	})
@@ -123,9 +127,9 @@ func (b *Builder) GetForeach(path string, fn func(key, value gjson.Result)) *Bui
 	return b
 }
 
-// SetJSON builds JSON
-func (b *Builder) SetJSON(json []byte, path string, value interface{}) []byte {
-	o, _ := sjson.SetBytes(json, path, value)
+// SetData builds JSON
+func (b *Builder) SetData(data []byte, path string, value interface{}) []byte {
+	o, _ := sjson.SetBytes(data, path, value)
 	return o
 }
 
@@ -137,6 +141,12 @@ func (b *Builder) Bytes() []byte {
 // String returns string form Buffer
 func (b *Builder) String() string {
 	return b.bb.String()
+}
+
+// Close destroys Buffer
+func (b *Builder) Close() {
+	b.bb.Reset()
+	b.bb = nil
 }
 
 func indent(bb *bytes.Buffer, ind int) {

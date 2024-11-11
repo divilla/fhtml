@@ -3,7 +3,7 @@ package fhtml
 type (
 	// Renderer is interface for layouts, views and components
 	Renderer interface {
-		Render() Renderer
+		Render(data []byte) Renderer
 		Layout() Renderer
 		SetLayout(layout Renderer) Renderer
 		Builder() *Builder

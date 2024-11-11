@@ -14,10 +14,10 @@ func NewInnerLayout(content fhtml.Renderer) *InnerLayout {
 	return l
 }
 
-func (l *InnerLayout) Render() fhtml.Renderer {
+func (l *InnerLayout) Render(data []byte) fhtml.Renderer {
 	b := l.Builder()
 	b.EC(`<div class="container">`).C(
-		l.Content().Render(),
+		l.Content().Render(data),
 	).E(`</div>`)
 
 	return l

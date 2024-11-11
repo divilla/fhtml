@@ -7,16 +7,17 @@ type (
 	}
 )
 
-func (v *BaseView) Run() []byte {
+func (v *BaseView) Run(data []byte) []byte {
 	layout := Renderer(v)
 	for layout.Layout() != nil {
 		layout = layout.Layout()
 	}
 
-	return layout.Render().Bytes()
+	return layout.Render(data).Bytes()
 }
 
-func (v *BaseView) Render() Renderer {
+func (v *BaseView) Render(data []byte) Renderer {
+	_ = data
 	return v
 }
 

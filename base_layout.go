@@ -8,8 +8,8 @@ type (
 	}
 )
 
-func (l *BaseLayout) Render() Renderer {
-
+func (l *BaseLayout) Render(data []byte) Renderer {
+	_ = data
 	return l
 }
 
