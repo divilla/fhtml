@@ -19,7 +19,7 @@ func (l *BaseLayout) Content() Renderer {
 
 func (l *BaseLayout) SetContent(content Renderer) Renderer {
 	l.content = content
-	l.builder = content.Builder()
+	l.SetBuilder(content.Builder())
 	return l
 }
 
@@ -34,6 +34,11 @@ func (l *BaseLayout) SetLayout(layout Renderer) Renderer {
 
 func (l *BaseLayout) Builder() *Builder {
 
+	return l.builder
+}
+
+func (l *BaseLayout) SetBuilder(builder *Builder) *Builder {
+	l.builder = builder
 	return l.builder
 }
 
