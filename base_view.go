@@ -13,7 +13,7 @@ func (v *BaseView) Run(data []byte) []byte {
 		layout = layout.Layout()
 	}
 
-	return layout.Render(data).Bytes()
+	return layout.Render(data).Builder().Bytes()
 }
 
 func (v *BaseView) Render(data []byte) Renderer {
@@ -45,4 +45,8 @@ func (v *BaseView) Bytes() []byte {
 
 func (v *BaseView) String() string {
 	return v.builder.String()
+}
+
+func (v *BaseView) Close() {
+	v.builder.Close()
 }

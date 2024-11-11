@@ -12,6 +12,6 @@ func main() {
 	j, _ = sjson.SetBytes(j, `nums`, []int{1, 2, 3, 4, 5, 6})
 	j, _ = sjson.SetBytes(j, `show`, true)
 	fmt.Println(string(j))
-	v := NewView().Run(j)
-	fmt.Println(string(v))
+	v := NewView()
+	fmt.Println(string(v.Run(j)))
 }

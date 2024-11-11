@@ -25,7 +25,7 @@ func (v *View) Render(data []byte) fhtml.Renderer {
 		b.Foreach(data, `nums`, func(key, val gjson.Result) {
 			b.EC(`<div>`).C(
 				b.E(`<h1 class="title">`, `Hello World `, val.Raw, `</h1>`),
-				NewComponent(b).Render(data, `nums.`+key.Raw),
+				NewComponent(b).Render(val.Raw),
 				b.If(b.GetBool(data, `show`), func() {
 					b.EC(`<p class="subtitle">`).C(
 						b.E(`My first website with <strong>Bulma</strong>!`),

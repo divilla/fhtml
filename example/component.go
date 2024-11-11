@@ -17,9 +17,9 @@ func NewComponent(builder *fhtml.Builder) *Component {
 	return v
 }
 
-func (v *Component) Render(data []byte, path string) bool {
+func (v *Component) Render(nr string) bool {
 	b := v.Builder()
-	b.E(`<h1 class="title">`, `Hello World `, b.GetString(data, path), `</h1>`)
+	b.E(`<h1 class="title">`, `Hello World `, nr, `</h1>`)
 
 	return true
 }
