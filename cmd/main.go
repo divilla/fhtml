@@ -13,7 +13,6 @@ func main() {
 	j, _ = sjson.SetBytes(j, `nums`, []int{1, 2, 3, 4, 5, 6})
 	j, _ = sjson.SetBytes(j, `show`, true)
 	fmt.Println(string(j))
-	v := fhtml.NewView(j)
-	l := fhtml.FindOutermostLayout(v).Render()
-	fmt.Println(l)
+	v := fhtml.NewView(j).Run()
+	fmt.Println(string(v))
 }

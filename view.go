@@ -38,6 +38,15 @@ func (v *View) Render() Renderer {
 	return v
 }
 
+func (v *View) Run() []byte {
+	layout := Renderer(v)
+	for layout.Layout() != nil {
+		layout = layout.Layout()
+	}
+
+	return layout.Render().Bytes()
+}
+
 func (v *View) Layout() Renderer {
 	return v.layout
 }

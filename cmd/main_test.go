@@ -16,8 +16,7 @@ func Benchmark_Render(b *testing.B) {
 	j, _ = sjson.SetBytes(j, `show`, true)
 
 	for n := 0; n < b.N; n++ {
-		v := fhtml.NewView(j)
-		r = fhtml.FindOutermostLayout(v).Render().Bytes()
+		r = fhtml.NewView(j).Run()
 	}
 
 	result = r
