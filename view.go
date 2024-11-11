@@ -6,15 +6,13 @@ import (
 
 type (
 	View struct {
-		builder *Builder
-		layout  Renderer
+		BaseView
 	}
 )
 
 func NewView(data []byte) *View {
-	v := &View{
-		builder: NewBuilder(data),
-	}
+	v := new(View)
+	v.builder = NewBuilder(data)
 	v.layout = NewInnerLayout(v)
 
 	return v
@@ -36,29 +34,4 @@ func (v *View) Render() Renderer {
 	).E(`</section>`)
 
 	return v
-}
-
-func (v *View) Run() []byte {
-	layout := Renderer(v)
-	for layout.Layout() != nil {
-		layout = layout.Layout()
-	}
-
-	return layout.Render().Bytes()
-}
-
-func (v *View) Layout() Renderer {
-	return v.layout
-}
-
-func (v *View) Builder() *Builder {
-	return v.builder
-}
-
-func (v *View) Bytes() []byte {
-	return v.builder.Bytes()
-}
-
-func (v *View) String() string {
-	return v.builder.String()
 }
