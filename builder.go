@@ -2,7 +2,7 @@ package fhtml
 
 import (
 	"bytes"
-	"strconv"
+	"github.com/tidwall/sjson"
 	"strings"
 
 	"github.com/sym01/htmlsanitizer"
@@ -46,7 +46,7 @@ func (b *Builder) HI(tokens ...string) *Builder {
 	return b.H(tokens...)
 }
 
-// T writes sanitized stext
+// T writes sanitized text
 func (b *Builder) T(tokens ...string) *Builder {
 	s := strings.Join(tokens, ``)
 	ss, err := htmlsanitizer.SanitizeString(s)
@@ -87,6 +87,7 @@ func (b *Builder) EC(tokens ...string) *Builder {
 
 // C is building Element's Children
 func (b *Builder) C(a ...any) *Builder {
+	_ = a
 	b.ind--
 
 	return b
@@ -94,6 +95,7 @@ func (b *Builder) C(a ...any) *Builder {
 
 // D creates base HTML document
 func (b *Builder) D(a ...any) *Builder {
+	_ = a
 	return b
 }
 
@@ -113,11 +115,18 @@ func (b *Builder) GetIf(path string, fn func()) *Builder {
 
 // GetForeach extracts array from JSON data for provided 'path' and executes 'fn' for each array member
 func (b *Builder) GetForeach(path string, fn func(key, val gjson.Result)) *Builder {
-	for key, val := range gjson.GetBytes(b.data, path).Array() {
-		fn(keyResult(key), val)
-	}
+	gjson.GetBytes(b.data, path).ForEach(func(key, value gjson.Result) bool {
+		fn(key, value)
+		return true
+	})
 
 	return b
+}
+
+// SetJSON builds JSON
+func (b *Builder) SetJSON(json []byte, path string, value interface{}) []byte {
+	o, _ := sjson.SetBytes(json, path, value)
+	return o
 }
 
 // Bytes returns []byte form Buffer
@@ -143,13 +152,4 @@ func indent(bb *bytes.Buffer, ind int) {
 	indentCache[ind] = s
 
 	bb.WriteString(s)
-}
-
-func keyResult(key int) gjson.Result {
-	return gjson.Result{
-		Type: gjson.Number,
-		Raw:  strconv.Itoa(key),
-		Str:  strconv.Itoa(key),
-		Num:  float64(key),
-	}
 }
