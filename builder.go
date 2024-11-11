@@ -114,7 +114,7 @@ func (b *Builder) GetIf(path string, fn func()) *Builder {
 }
 
 // GetForeach extracts array from JSON data for provided 'path' and executes 'fn' for each array member
-func (b *Builder) GetForeach(path string, fn func(key, val gjson.Result)) *Builder {
+func (b *Builder) GetForeach(path string, fn func(key, value gjson.Result)) *Builder {
 	gjson.GetBytes(b.data, path).ForEach(func(key, value gjson.Result) bool {
 		fn(key, value)
 		return true
