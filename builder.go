@@ -31,22 +31,22 @@ func NewBuilder() *Builder {
 }
 
 // H writes raw strings - not sanitized HTML
-func (b *Builder) H(tokens ...string) *Builder {
+func (b *Builder) H(tokens ...string) *struct{} {
 	for _, token := range tokens {
 		b.bb.WriteString(token)
 	}
 
-	return b
+	return nil
 }
 
 // HI writes indented raw strings - not sanitized HTML
-func (b *Builder) HI(tokens ...string) *Builder {
+func (b *Builder) HI(tokens ...string) *struct{} {
 	indent(b.bb, b.ind)
 	return b.H(tokens...)
 }
 
 // T writes sanitized text
-func (b *Builder) T(tokens ...string) *Builder {
+func (b *Builder) T(tokens ...string) *struct{} {
 	s := strings.Join(tokens, ``)
 	ss, err := htmlsanitizer.SanitizeString(s)
 	if err != nil {
@@ -54,23 +54,23 @@ func (b *Builder) T(tokens ...string) *Builder {
 	}
 	b.bb.WriteString(ss)
 
-	return b
+	return nil
 }
 
 // TI writes indented sanitized strings
-func (b *Builder) TI(tokens ...string) *Builder {
+func (b *Builder) TI(tokens ...string) *struct{} {
 	indent(b.bb, b.ind)
 	return b.T(tokens...)
 }
 
 // E is used for writing elements without Children
-func (b *Builder) E(tokens ...string) *Builder {
+func (b *Builder) E(tokens ...string) *struct{} {
 	indent(b.bb, b.ind)
 	for _, token := range tokens {
 		b.bb.WriteString(token)
 	}
 
-	return b
+	return nil
 }
 
 // EC is used for writing elements with Children
@@ -93,9 +93,28 @@ func (b *Builder) C(a ...any) *Builder {
 }
 
 // D creates base HTML document
-func (b *Builder) D(a ...any) *Builder {
+func (b *Builder) D(a ...any) *struct{} {
 	_ = a
-	return b
+	return nil
+}
+
+// If executes 'fn' if result of 'expression' is true
+func (b *Builder) If(expression bool, fn func()) *struct{} {
+	if expression {
+		fn()
+	}
+
+	return nil
+}
+
+// Foreach extracts array from JSON data for provided 'path' and executes 'fn' for each array member
+func (b *Builder) Foreach(data []byte, path string, fn func(key, value gjson.Result)) *struct{} {
+	gjson.GetBytes(data, path).ForEach(func(key, value gjson.Result) bool {
+		fn(key, value)
+		return true
+	})
+
+	return nil
 }
 
 // GetString extracts string value from JSON data given provided path
@@ -106,25 +125,6 @@ func (b *Builder) GetString(data []byte, path string) string {
 // GetBool extracts bool value from JSON data given provided path
 func (b *Builder) GetBool(data []byte, path string) bool {
 	return gjson.GetBytes(data, path).Bool()
-}
-
-// If executes 'fn' if result of 'expression' is true
-func (b *Builder) If(expression bool, fn func()) *Builder {
-	if expression {
-		fn()
-	}
-
-	return b
-}
-
-// Foreach extracts array from JSON data for provided 'path' and executes 'fn' for each array member
-func (b *Builder) Foreach(data []byte, path string, fn func(key, value gjson.Result)) *Builder {
-	gjson.GetBytes(data, path).ForEach(func(key, value gjson.Result) bool {
-		fn(key, value)
-		return true
-	})
-
-	return b
 }
 
 // SetData builds JSON
