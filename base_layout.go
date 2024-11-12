@@ -7,7 +7,7 @@ type (
 	}
 )
 
-func (v *BaseLayout) Render(b *Builder, data []byte) *Builder {
+func (l *BaseLayout) Render(b *Builder, data []byte) *Builder {
 	_ = data
 	return b
 }
