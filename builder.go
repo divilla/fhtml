@@ -107,6 +107,15 @@ func (b *Builder) If(expression bool, fn func()) *struct{} {
 	return nil
 }
 
+// IfString executes 'fn' if result of 'expression' is true
+func (b *Builder) IfString(expression bool, s string) string {
+	if expression {
+		return s
+	}
+
+	return ""
+}
+
 // Foreach extracts array from JSON data for provided 'path' and executes 'fn' for each array member
 func (b *Builder) Foreach(data []byte, path string, fn func(key, value gjson.Result)) *struct{} {
 	gjson.GetBytes(data, path).ForEach(func(key, value gjson.Result) bool {
