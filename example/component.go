@@ -10,16 +10,13 @@ type (
 	}
 )
 
-func NewComponent(builder *fhtml.Builder) *Component {
+func NewComponent() *Component {
 	v := new(Component)
-	v.SetBuilder(builder)
-
 	return v
 }
 
-func (v *Component) Render(nr string) bool {
-	b := v.Builder()
+func (v *Component) Render(b *fhtml.Builder, nr string) *fhtml.Builder {
 	b.E(`<h1 class="title">`, `Hello World `, nr, `</h1>`)
 
-	return true
+	return b
 }

@@ -2,23 +2,22 @@ package fhtml
 
 type (
 	BaseView struct {
-		builder *Builder
-		layout  Renderer
+		layout Renderer
 	}
 )
 
-func (v *BaseView) Run(data []byte) []byte {
+func (v *BaseView) Run(b *Builder, data []byte) []byte {
 	layout := Renderer(v)
 	for layout.Layout() != nil {
 		layout = layout.Layout()
 	}
 
-	return layout.Render(data).Builder().Bytes()
+	return layout.Render(b, data).Bytes()
 }
 
-func (v *BaseView) Render(data []byte) Renderer {
+func (v *BaseView) Render(b *Builder, data []byte) *Builder {
 	_ = data
-	return v
+	return b
 }
 
 func (v *BaseView) Layout() Renderer {
@@ -28,25 +27,4 @@ func (v *BaseView) Layout() Renderer {
 func (v *BaseView) SetLayout(layout Renderer) Renderer {
 	v.layout = layout
 	return v
-}
-
-func (v *BaseView) Builder() *Builder {
-	return v.builder
-}
-
-func (v *BaseView) SetBuilder(builder *Builder) Renderer {
-	v.builder = builder
-	return v
-}
-
-func (v *BaseView) Bytes() []byte {
-	return v.builder.Bytes()
-}
-
-func (v *BaseView) String() string {
-	return v.builder.String()
-}
-
-func (v *BaseView) Close() {
-	v.builder.Close()
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/divilla/fhtml"
 	"testing"
 
 	"github.com/tidwall/sjson"
@@ -15,11 +16,12 @@ func Benchmark_Render(b *testing.B) {
 	data, _ = sjson.SetBytes(data, `title`, `Hello Bulma!`)
 	data, _ = sjson.SetBytes(data, `nums`, []int{1, 2, 3, 4, 5, 6})
 	data, _ = sjson.SetBytes(data, `show`, true)
+	view := NewView()
 
 	for n := 0; n < b.N; n++ {
-		view := NewView()
-		r = view.Run(data)
-		view.Close()
+		builder := fhtml.NewBuilder()
+		r = view.Run(builder, data)
+		builder.Close()
 	}
 
 	result = r

@@ -12,8 +12,7 @@ func NewOuterLayout(content fhtml.Renderer) *OuterLayout {
 	return l
 }
 
-func (l *OuterLayout) Render(data []byte) fhtml.Renderer {
-	b := l.Builder()
+func (l *OuterLayout) Render(b *fhtml.Builder, data []byte) *fhtml.Builder {
 	b.D(
 		b.H(`<!DOCTYPE html>`),
 		b.EC(`<html>`).C(
@@ -24,10 +23,10 @@ func (l *OuterLayout) Render(data []byte) fhtml.Renderer {
 				b.E(`<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">`),
 			).E(`</head>`),
 			b.EC(`<body>`).C(
-				l.Content().Render(data),
+				l.Content().Render(b, data),
 			).E(`</body>`),
 		).E(`</html>`),
 	)
 
-	return l
+	return b
 }

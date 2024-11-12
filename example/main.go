@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/divilla/fhtml"
 
 	"github.com/tidwall/sjson"
 )
@@ -13,5 +14,7 @@ func main() {
 	j, _ = sjson.SetBytes(j, `show`, true)
 	fmt.Println(string(j))
 	v := NewView()
-	fmt.Println(string(v.Run(j)))
+	b := fhtml.NewBuilder()
+	fmt.Println(string(v.Run(b, j)))
+	b.Close()
 }

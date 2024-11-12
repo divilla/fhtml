@@ -13,19 +13,17 @@ type (
 
 func NewView() *View {
 	v := new(View)
-	v.SetBuilder(fhtml.NewBuilder())
 	v.SetLayout(NewInnerLayout(v))
 
 	return v
 }
 
-func (v *View) Render(data []byte) fhtml.Renderer {
-	b := v.Builder()
+func (v *View) Render(b *fhtml.Builder, data []byte) *fhtml.Builder {
 	b.EC(`<section class="section">`).C(
 		b.Foreach(data, `nums`, func(key, val gjson.Result) {
 			b.EC(`<div>`).C(
 				b.E(`<h1 class="title">`, `Hello World `, val.Raw, `</h1>`),
-				NewComponent(b).Render(val.Raw),
+				NewComponent().Render(b, val.Raw),
 				b.If(b.GetBool(data, `show`), func() {
 					b.EC(`<p class="subtitle">`).C(
 						b.E(`My first website with <strong>Bulma</strong>!`),
@@ -35,5 +33,5 @@ func (v *View) Render(data []byte) fhtml.Renderer {
 		}),
 	).E(`</section>`)
 
-	return v
+	return b
 }
