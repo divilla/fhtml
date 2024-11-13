@@ -12,12 +12,15 @@ func (v *BaseView) Run(b *Builder, data []byte) []byte {
 		layout = layout.Layout()
 	}
 
-	return layout.Render(b, data).Bytes()
+	layout.Render(b, data)
+
+	return b.Bytes()
 }
 
-func (v *BaseView) Render(b *Builder, data []byte) *Builder {
+func (v *BaseView) Render(b *Builder, data []byte) *struct{} {
+	_ = b
 	_ = data
-	return b
+	return nil
 }
 
 func (v *BaseView) Layout() Renderer {

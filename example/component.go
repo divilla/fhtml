@@ -15,8 +15,6 @@ func NewComponent() *Component {
 	return v
 }
 
-func (v *Component) Render(b *fhtml.Builder, nr string) *fhtml.Builder {
-	b.E(`<h1 class="title">`, `Hello World `, nr, `</h1>`)
-
-	return b
+func (v *Component) Render(b *fhtml.Builder, nr string) *struct{} {
+	return b.E("h1", b.Class("test", "title")).CI(b.HI("Hello World ", nr))
 }

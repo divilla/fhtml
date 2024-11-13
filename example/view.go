@@ -18,20 +18,18 @@ func NewView() *View {
 	return v
 }
 
-func (v *View) Render(b *fhtml.Builder, data []byte) *fhtml.Builder {
-	b.EC(`<section class="section">`).C(
+func (v *View) Render(b *fhtml.Builder, data []byte) *struct{} {
+	return b.E("section", b.Class("section")).C(
 		b.Foreach(data, `nums`, func(key, val gjson.Result) {
-			b.EC(`<div>`).C(
-				b.E(`<h1 class="`, b.IfString(true, `title`), `">`, `Hello World `, val.Raw, `</h1>`),
+			b.E("div").C(
+				b.E("h1", b.Class("title")).CI(b.HI("Hello World ", val.Raw)),
 				NewComponent().Render(b, val.Raw),
 				b.If(b.GetBool(data, `show`), func() {
-					b.EC(`<p class="subtitle">`).C(
-						b.E(`My first website with <strong>Bulma</strong>!`),
-					).E(`</p>`)
+					b.E("p", b.Class("subtitle")).C(
+						b.H(`My first website with <strong>Bulma</strong>!`),
+					)
 				}),
-			).E(`</div>`)
+			)
 		}),
-	).E(`</section>`)
-
-	return b
+	)
 }

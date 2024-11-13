@@ -18,9 +18,11 @@ var (
 
 type (
 	Builder struct {
-		bb  *bytes.Buffer
-		ind int
+		bb   *bytes.Buffer
+		tags []string
 	}
+
+	BuilderFn func(b *Builder) *struct{}
 )
 
 // NewBuilder constructs *Builder provided 'data' argument is valid JSON
@@ -30,8 +32,8 @@ func NewBuilder() *Builder {
 	}
 }
 
-// H writes raw strings - not sanitized HTML
-func (b *Builder) H(tokens ...string) *struct{} {
+// HI writes raw strings inline - not sanitized HTML
+func (b *Builder) HI(tokens ...string) *struct{} {
 	for _, token := range tokens {
 		b.bb.WriteString(token)
 	}
@@ -39,14 +41,14 @@ func (b *Builder) H(tokens ...string) *struct{} {
 	return nil
 }
 
-// HI writes indented raw strings - not sanitized HTML
-func (b *Builder) HI(tokens ...string) *struct{} {
-	indent(b.bb, b.ind)
-	return b.H(tokens...)
+// H writes indented raw strings - not sanitized HTML
+func (b *Builder) H(tokens ...string) *struct{} {
+	indent(b.bb, len(b.tags))
+	return b.HI(tokens...)
 }
 
-// T writes sanitized text
-func (b *Builder) T(tokens ...string) *struct{} {
+// TI writes sanitized text inline
+func (b *Builder) TI(tokens ...string) *struct{} {
 	s := strings.Join(tokens, ``)
 	ss, err := htmlsanitizer.SanitizeString(s)
 	if err != nil {
@@ -57,39 +59,97 @@ func (b *Builder) T(tokens ...string) *struct{} {
 	return nil
 }
 
-// TI writes indented sanitized strings
-func (b *Builder) TI(tokens ...string) *struct{} {
-	indent(b.bb, b.ind)
-	return b.T(tokens...)
+// T writes indented sanitized strings
+func (b *Builder) T(tokens ...string) *struct{} {
+	indent(b.bb, len(b.tags))
+	return b.TI(tokens...)
 }
 
-// E is used for writing elements without Children
-func (b *Builder) E(tokens ...string) *struct{} {
-	indent(b.bb, b.ind)
-	for _, token := range tokens {
-		b.bb.WriteString(token)
+// A writes attribute
+func (b *Builder) A(attr ...string) BuilderFn {
+	return func(b *Builder) *struct{} {
+		if len(attr) == 1 && attr[0] != "" {
+			return b.WriteString(` `, attr[0])
+		}
+		if len(attr) > 1 && attr[0] != "" {
+			return b.WriteString(` `, attr[0], `="`, attr[1], `"`)
+		}
+
+		return nil
 	}
+}
+
+// Class writes class attribute
+func (b *Builder) Class(vals ...string) BuilderFn {
+	return func(b *Builder) *struct{} {
+		b.WriteString(` class="`)
+		for key, val := range vals {
+			if val == "" {
+				continue
+			}
+			if key > 0 {
+				b.WriteString(` `)
+			}
+			b.WriteString(val)
+		}
+		return b.WriteString(`"`)
+	}
+}
+
+// EI is used for writing elements without Children
+func (b *Builder) EI(tag string, attrs ...BuilderFn) *Builder {
+	b.WriteString(`<`, tag)
+	for _, attr := range attrs {
+		attr(b)
+	}
+	b.WriteString(`>`)
+	b.tags = append(b.tags, tag)
+
+	return b
+}
+
+// EV is used for writing void elements
+func (b *Builder) EV(tag string, attrs ...BuilderFn) *struct{} {
+	indent(b.bb, len(b.tags))
+	b.EI(tag, attrs...)
+	popTag(b)
 
 	return nil
 }
 
-// EC is used for writing elements with Children
-func (b *Builder) EC(tokens ...string) *Builder {
-	indent(b.bb, b.ind)
-	for _, token := range tokens {
-		b.bb.WriteString(token)
-	}
-	b.ind++
+// E is used for writing elements
+func (b *Builder) E(tag string, attrs ...BuilderFn) *Builder {
+	indent(b.bb, len(b.tags))
+	b.EI(tag, attrs...)
 
 	return b
 }
 
-// C is building Element's Children
-func (b *Builder) C(a ...any) *Builder {
+// CI is building Element's Children inline
+func (b *Builder) CI(a ...any) *struct{} {
 	_ = a
-	b.ind--
 
-	return b
+	if len(b.tags) == 0 {
+		return nil
+	}
+
+	tag := popTag(b)
+
+	return b.WriteString(`</`, tag, `>`)
+}
+
+// C is building Element's Children
+func (b *Builder) C(a ...any) *struct{} {
+	_ = a
+
+	if len(b.tags) == 0 {
+		return nil
+	}
+
+	tag := popTag(b)
+	indent(b.bb, len(b.tags))
+
+	return b.WriteString(`</`, tag, `>`)
 }
 
 // D creates base HTML document
@@ -152,10 +212,30 @@ func (b *Builder) String() string {
 	return b.bb.String()
 }
 
+// WriteString returns string form Buffer
+func (b *Builder) WriteString(s ...string) *struct{} {
+	for _, v := range s {
+		_, err := b.bb.WriteString(v)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return nil
+}
+
 // Close destroys Buffer
 func (b *Builder) Close() {
 	b.bb.Reset()
 	b.bb = nil
+}
+
+func popTag(b *Builder) string {
+	l := len(b.tags) - 1
+	tag := b.tags[l]
+	b.tags = b.tags[:l]
+
+	return tag
 }
 
 func indent(bb *bytes.Buffer, ind int) {

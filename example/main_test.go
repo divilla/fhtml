@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/divilla/fhtml"
 	"testing"
+
+	"github.com/divilla/fhtml"
 
 	"github.com/tidwall/sjson"
 )

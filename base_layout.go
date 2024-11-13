@@ -7,9 +7,10 @@ type (
 	}
 )
 
-func (l *BaseLayout) Render(b *Builder, data []byte) *Builder {
+func (l *BaseLayout) Render(b *Builder, data []byte) *struct{} {
+	_ = b
 	_ = data
-	return b
+	return nil
 }
 
 func (l *BaseLayout) Content() Renderer {
