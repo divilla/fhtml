@@ -34,8 +34,14 @@ func NewBuilder() *Builder {
 	}
 }
 
-// HI writes raw strings inline - not sanitized HTML
-func (b *Builder) HI(tokens ...string) *struct{} {
+// HTML writes indented raw strings - not sanitized HTML
+func (b *Builder) HTML(tokens ...string) *struct{} {
+	indent(b.bb, len(b.tags))
+	return b.HTMLInline(tokens...)
+}
+
+// HTMLInline writes raw strings inline - not sanitized HTML
+func (b *Builder) HTMLInline(tokens ...string) *struct{} {
 	for _, token := range tokens {
 		b.bb.WriteString(token)
 	}
@@ -43,14 +49,14 @@ func (b *Builder) HI(tokens ...string) *struct{} {
 	return nil
 }
 
-// HTML writes indented raw strings - not sanitized HTML
-func (b *Builder) HTML(tokens ...string) *struct{} {
+// Text writes indented sanitized text
+func (b *Builder) Text(tokens ...string) *struct{} {
 	indent(b.bb, len(b.tags))
-	return b.HI(tokens...)
+	return b.TextInline(tokens...)
 }
 
-// TI writes sanitized text inline
-func (b *Builder) TI(tokens ...string) *struct{} {
+// TextInline writes sanitized text inline
+func (b *Builder) TextInline(tokens ...string) *struct{} {
 	s := strings.Join(tokens, ``)
 	ss, err := htmlsanitizer.SanitizeString(s)
 	if err != nil {
@@ -61,25 +67,19 @@ func (b *Builder) TI(tokens ...string) *struct{} {
 	return nil
 }
 
-// T writes indented sanitized strings
-func (b *Builder) T(tokens ...string) *struct{} {
-	indent(b.bb, len(b.tags))
-	return b.TI(tokens...)
-}
-
-// A writes attribute
-func (b *Builder) A(attr ...string) *struct{} {
+// A writes HTML attribute
+func (b *Builder) A(attr ...string) *Builder {
 	if len(attr) == 1 && attr[0] != "" {
-		return b.WriteStringAfter(" ", attr[0])
+		b.WriteStringAfter(" ", attr[0])
 	}
 	if len(attr) > 1 && attr[0] != "" {
-		return b.WriteStringAfter(" ", attr[0], `="`, attr[1], `"`)
+		b.WriteStringAfter(" ", attr[0], `="`, attr[1], `"`)
 	}
 
-	return nil
+	return b
 }
 
-// Class writes class attribute
+// Class writes HTML class attribute
 func (b *Builder) Class(vals ...string) *struct{} {
 	b.WriteStringAfter(` class="`)
 	for key, val := range vals {
@@ -94,15 +94,12 @@ func (b *Builder) Class(vals ...string) *struct{} {
 	return b.WriteStringAfter(`""`)
 }
 
-// TagInline is used for writing elements without Children
-func (b *Builder) TagInline(tag string, attrs ...any) *Builder {
+// Tag is used for writing elements
+func (b *Builder) Tag(tag string, attrs ...any) *Builder {
 	_ = attrs
 
-	b.WriteString(`<`, tag)
-	b.bb.Write(b.bba.Bytes())
-	b.WriteString(`>`)
-	b.tags = append(b.tags, tag)
-	b.bba.Reset()
+	indent(b.bb, len(b.tags))
+	b.TagInline(tag)
 
 	return b
 }
@@ -118,23 +115,17 @@ func (b *Builder) TagVoid(tag string, attrs ...any) *struct{} {
 	return nil
 }
 
-// Tag is used for writing elements
-func (b *Builder) Tag(tag string, attrs ...any) *Builder {
+// TagInline is used for writing elements without Children
+func (b *Builder) TagInline(tag string, attrs ...any) *Builder {
 	_ = attrs
 
-	indent(b.bb, len(b.tags))
-	b.TagInline(tag)
+	b.WriteString(`<`, tag)
+	b.bb.Write(b.bba.Bytes())
+	b.WriteString(`>`)
+	b.tags = append(b.tags, tag)
+	b.bba.Reset()
 
 	return b
-}
-
-// ContentInline is building Element's Children inline
-func (b *Builder) ContentInline(a ...any) *struct{} {
-	_ = a
-
-	tag := popTag(b)
-
-	return b.WriteString(`</`, tag, `>`)
 }
 
 // Content is building Element's Children
@@ -147,8 +138,17 @@ func (b *Builder) Content(a ...any) *struct{} {
 	return b.WriteString(`</`, tag, `>`)
 }
 
-// D creates base HTML document
-func (b *Builder) D(a ...any) *struct{} {
+// ContentInline is building Element's Children inline
+func (b *Builder) ContentInline(a ...any) *struct{} {
+	_ = a
+
+	tag := popTag(b)
+
+	return b.WriteString(`</`, tag, `>`)
+}
+
+// Document creates base HTML document
+func (b *Builder) Document(a ...any) *struct{} {
 	_ = a
 	return nil
 }

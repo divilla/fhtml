@@ -11,22 +11,23 @@ type (
 	}
 )
 
-func NewView() *View {
+func NewView(data []byte) *View {
 	v := new(View)
+	v.SetData(data)
 	v.SetLayout(NewInnerLayout(v))
 
 	return v
 }
 
-func (v *View) Render(b *fhtml.Builder, data []byte) *struct{} {
+func (v *View) Render(b *fhtml.Builder) *struct{} {
 	return b.Tag("section", b.Class("section")).Content(
-		b.Foreach(data, `nums`, func(key, val gjson.Result) {
+		b.Foreach(v.Data(), `nums`, func(key, val gjson.Result) {
 			b.Tag("div").Content(
 				b.Tag("h1", b.Class("title")).ContentInline(
-					b.HI("Hello World ", val.Raw),
+					b.HTMLInline("Hello World ", val.Raw),
 				),
 				NewComponent().Render(b, val.Raw),
-				b.If(b.GetBool(data, `show`), func() {
+				b.If(b.GetBool(v.Data(), `show`), func() {
 					b.Tag("p", b.Class("subtitle")).Content(
 						b.HTML(`My first website with <strong>Bulma</strong>!`),
 					)

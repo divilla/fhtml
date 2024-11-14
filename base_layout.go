@@ -4,13 +4,17 @@ type (
 	BaseLayout struct {
 		layout  Renderer
 		content Renderer
+		data    []byte
 	}
 )
 
-func (l *BaseLayout) Render(b *Builder, data []byte) *struct{} {
-	_ = b
-	_ = data
-	return nil
+func (l *BaseLayout) Data() []byte {
+	return l.data
+}
+
+func (l *BaseLayout) SetData(data []byte) Renderer {
+	l.data = data
+	return l
 }
 
 func (l *BaseLayout) Content() Renderer {
@@ -29,4 +33,9 @@ func (l *BaseLayout) Layout() Renderer {
 func (l *BaseLayout) SetLayout(layout Renderer) Renderer {
 	l.layout = layout
 	return l
+}
+
+func (l *BaseLayout) Render(b *Builder) *struct{} {
+	_ = b
+	return nil
 }
