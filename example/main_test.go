@@ -19,9 +19,9 @@ func Benchmark_Render(b *testing.B) {
 	data, _ = sjson.SetBytes(data, `show`, true)
 
 	for n := 0; n < b.N; n++ {
-		view := NewView()
+		view := NewView(data)
 		builder := fhtml.NewBuilder()
-		r = view.Run(builder, data)
+		r = view.Run(builder)
 		builder.Close()
 	}
 
