@@ -80,7 +80,7 @@ func (b *Builder) A(attr ...string) *Builder {
 }
 
 // Class writes HTML class attribute
-func (b *Builder) Class(vals ...string) *struct{} {
+func (b *Builder) Class(vals ...string) *Builder {
 	b.WriteStringAfter(` class="`)
 	for key, val := range vals {
 		if val == "" {
@@ -91,7 +91,9 @@ func (b *Builder) Class(vals ...string) *struct{} {
 		}
 		b.WriteStringAfter(val)
 	}
-	return b.WriteStringAfter(`""`)
+	b.WriteStringAfter(`""`)
+
+	return b
 }
 
 // Tag is used for writing elements
