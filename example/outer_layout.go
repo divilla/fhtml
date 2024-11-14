@@ -14,15 +14,15 @@ func NewOuterLayout(content fhtml.Renderer) *OuterLayout {
 
 func (l *OuterLayout) Render(b *fhtml.Builder, data []byte) *struct{} {
 	return b.D(
-		b.H(`<!DOCTYPE html>`),
-		b.E("html").C(
-			b.E("head").C(
-				b.EV("meta", b.A("charset", "utf-8")),
-				b.EV("meta", b.A("name", "viewport"), b.A("content", "width=device-width, initial-scale=1")),
-				b.E("title").CI(b.HI(b.GetString(data, "title"))),
-				b.EV("link", b.A("rel", "stylesheet"), b.A("href", "https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css")),
+		b.HTML(`<!DOCTYPE html>`),
+		b.Tag("html").Content(
+			b.Tag("head").Content(
+				b.TagVoid("meta", b.A("charset", "utf-8")),
+				b.TagVoid("meta", b.A("name", "viewport"), b.A("content", "width=device-width, initial-scale=1")),
+				b.Tag("title").ContentInline(b.HI(b.GetString(data, "title"))),
+				b.TagVoid("link", b.A("rel", "stylesheet"), b.A("href", "https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css")),
 			),
-			b.E("body").C(
+			b.Tag("body").Content(
 				l.Content().Render(b, data),
 			),
 		),

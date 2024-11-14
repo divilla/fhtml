@@ -16,5 +16,5 @@ func NewComponent() *Component {
 }
 
 func (v *Component) Render(b *fhtml.Builder, nr string) *struct{} {
-	return b.E("h1", b.Class("test", "title")).CI(b.HI("Hello World ", nr))
+	return b.Tag("h1", b.Class("test", "title")).ContentInline(b.HI("Hello World ", nr))
 }

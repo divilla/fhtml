@@ -19,14 +19,16 @@ func NewView() *View {
 }
 
 func (v *View) Render(b *fhtml.Builder, data []byte) *struct{} {
-	return b.E("section", b.Class("section")).C(
+	return b.Tag("section", b.Class("section")).Content(
 		b.Foreach(data, `nums`, func(key, val gjson.Result) {
-			b.E("div").C(
-				b.E("h1", b.Class("title")).CI(b.HI("Hello World ", val.Raw)),
+			b.Tag("div").Content(
+				b.Tag("h1", b.Class("title")).ContentInline(
+					b.HI("Hello World ", val.Raw),
+				),
 				NewComponent().Render(b, val.Raw),
 				b.If(b.GetBool(data, `show`), func() {
-					b.E("p", b.Class("subtitle")).C(
-						b.H(`My first website with <strong>Bulma</strong>!`),
+					b.Tag("p", b.Class("subtitle")).Content(
+						b.HTML(`My first website with <strong>Bulma</strong>!`),
 					)
 				}),
 			)

@@ -19,6 +19,7 @@ var (
 type (
 	Builder struct {
 		bb   *bytes.Buffer
+		bba  *bytes.Buffer
 		tags []string
 	}
 
@@ -28,7 +29,8 @@ type (
 // NewBuilder constructs *Builder provided 'data' argument is valid JSON
 func NewBuilder() *Builder {
 	return &Builder{
-		bb: new(bytes.Buffer),
+		bb:  new(bytes.Buffer),
+		bba: new(bytes.Buffer),
 	}
 }
 
@@ -41,8 +43,8 @@ func (b *Builder) HI(tokens ...string) *struct{} {
 	return nil
 }
 
-// H writes indented raw strings - not sanitized HTML
-func (b *Builder) H(tokens ...string) *struct{} {
+// HTML writes indented raw strings - not sanitized HTML
+func (b *Builder) HTML(tokens ...string) *struct{} {
 	indent(b.bb, len(b.tags))
 	return b.HI(tokens...)
 }
@@ -66,85 +68,78 @@ func (b *Builder) T(tokens ...string) *struct{} {
 }
 
 // A writes attribute
-func (b *Builder) A(attr ...string) BuilderFn {
-	return func(b *Builder) *struct{} {
-		if len(attr) == 1 && attr[0] != "" {
-			return b.WriteString(` `, attr[0])
-		}
-		if len(attr) > 1 && attr[0] != "" {
-			return b.WriteString(` `, attr[0], `="`, attr[1], `"`)
-		}
-
-		return nil
+func (b *Builder) A(attr ...string) *struct{} {
+	if len(attr) == 1 && attr[0] != "" {
+		return b.WriteStringAfter(" ", attr[0])
 	}
+	if len(attr) > 1 && attr[0] != "" {
+		return b.WriteStringAfter(" ", attr[0], `="`, attr[1], `"`)
+	}
+
+	return nil
 }
 
 // Class writes class attribute
-func (b *Builder) Class(vals ...string) BuilderFn {
-	return func(b *Builder) *struct{} {
-		b.WriteString(` class="`)
-		for key, val := range vals {
-			if val == "" {
-				continue
-			}
-			if key > 0 {
-				b.WriteString(` `)
-			}
-			b.WriteString(val)
+func (b *Builder) Class(vals ...string) *struct{} {
+	b.WriteStringAfter(` class="`)
+	for key, val := range vals {
+		if val == "" {
+			continue
 		}
-		return b.WriteString(`"`)
+		if key > 0 {
+			b.WriteStringAfter(" ")
+		}
+		b.WriteStringAfter(val)
 	}
+	return b.WriteStringAfter(`""`)
 }
 
-// EI is used for writing elements without Children
-func (b *Builder) EI(tag string, attrs ...BuilderFn) *Builder {
+// TagInline is used for writing elements without Children
+func (b *Builder) TagInline(tag string, attrs ...any) *Builder {
+	_ = attrs
+
 	b.WriteString(`<`, tag)
-	for _, attr := range attrs {
-		attr(b)
-	}
+	b.bb.Write(b.bba.Bytes())
 	b.WriteString(`>`)
 	b.tags = append(b.tags, tag)
+	b.bba.Reset()
 
 	return b
 }
 
-// EV is used for writing void elements
-func (b *Builder) EV(tag string, attrs ...BuilderFn) *struct{} {
+// TagVoid is used for writing void elements
+func (b *Builder) TagVoid(tag string, attrs ...any) *struct{} {
+	_ = attrs
+
 	indent(b.bb, len(b.tags))
-	b.EI(tag, attrs...)
+	b.TagInline(tag)
 	popTag(b)
 
 	return nil
 }
 
-// E is used for writing elements
-func (b *Builder) E(tag string, attrs ...BuilderFn) *Builder {
+// Tag is used for writing elements
+func (b *Builder) Tag(tag string, attrs ...any) *Builder {
+	_ = attrs
+
 	indent(b.bb, len(b.tags))
-	b.EI(tag, attrs...)
+	b.TagInline(tag)
 
 	return b
 }
 
-// CI is building Element's Children inline
-func (b *Builder) CI(a ...any) *struct{} {
+// ContentInline is building Element's Children inline
+func (b *Builder) ContentInline(a ...any) *struct{} {
 	_ = a
-
-	if len(b.tags) == 0 {
-		return nil
-	}
 
 	tag := popTag(b)
 
 	return b.WriteString(`</`, tag, `>`)
 }
 
-// C is building Element's Children
-func (b *Builder) C(a ...any) *struct{} {
+// Content is building Element's Children
+func (b *Builder) Content(a ...any) *struct{} {
 	_ = a
-
-	if len(b.tags) == 0 {
-		return nil
-	}
 
 	tag := popTag(b)
 	indent(b.bb, len(b.tags))
@@ -216,6 +211,18 @@ func (b *Builder) String() string {
 func (b *Builder) WriteString(s ...string) *struct{} {
 	for _, v := range s {
 		_, err := b.bb.WriteString(v)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return nil
+}
+
+// WriteStringAfter returns string form Buffer
+func (b *Builder) WriteStringAfter(s ...string) *struct{} {
+	for _, v := range s {
+		_, err := b.bba.WriteString(v)
 		if err != nil {
 			panic(err)
 		}

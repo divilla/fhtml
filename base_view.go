@@ -3,6 +3,7 @@ package fhtml
 type (
 	BaseView struct {
 		layout Renderer
+		data   []byte
 	}
 )
 
