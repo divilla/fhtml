@@ -149,6 +149,17 @@ func (b *Builder) ContentInline(a ...any) *struct{} {
 	return b.WriteString(`</`, tag, `>`)
 }
 
+// HTMLInline writes raw strings inline - not sanitized HTML
+func (b *Builder) Inline(tokens ...string) *struct{} {
+	for _, token := range tokens {
+		b.bb.WriteString(token)
+	}
+
+	tag := popTag(b)
+
+	return b.WriteString(`</`, tag, `>`)
+}
+
 // Document creates base HTML document
 func (b *Builder) Document(a ...any) *struct{} {
 	_ = a
