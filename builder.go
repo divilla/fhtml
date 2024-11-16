@@ -149,7 +149,7 @@ func (b *Builder) ContentInline(a ...any) *struct{} {
 	return b.WriteString(`</`, tag, `>`)
 }
 
-// HTMLInline writes raw strings inline - not sanitized HTML
+// Inline writes raw string content into Tag
 func (b *Builder) Inline(tokens ...string) *struct{} {
 	for _, token := range tokens {
 		b.bb.WriteString(token)
@@ -182,16 +182,6 @@ func (b *Builder) IfString(expression bool, s string) string {
 	}
 
 	return ""
-}
-
-// Foreach extracts array from JSON data for provided 'path' and executes 'fn' for each array member
-func (b *Builder) Foreach(data []byte, path string, fn func(key, value gjson.Result)) *struct{} {
-	gjson.GetBytes(data, path).ForEach(func(key, value gjson.Result) bool {
-		fn(key, value)
-		return true
-	})
-
-	return nil
 }
 
 // GetString extracts string value from JSON data given provided path
