@@ -91,7 +91,7 @@ func (b *Builder) Class(vals ...string) *Builder {
 		}
 		b.WriteStringAfter(val)
 	}
-	b.WriteStringAfter(`""`)
+	b.WriteStringAfter(`"`)
 
 	return b
 }
@@ -149,7 +149,7 @@ func (b *Builder) ContentInline(a ...any) *struct{} {
 	return b.WriteString(`</`, tag, `>`)
 }
 
-// Inline writes raw string content into Tag
+// Inline writes raw strings instead of content
 func (b *Builder) Inline(tokens ...string) *struct{} {
 	for _, token := range tokens {
 		b.bb.WriteString(token)
@@ -167,7 +167,16 @@ func (b *Builder) Document(a ...any) *struct{} {
 }
 
 // If executes 'fn' if result of 'expression' is true
-func (b *Builder) If(expression bool, fn func()) *struct{} {
+func (b *Builder) If(expression bool, s string) string {
+	if expression {
+		return s
+	}
+
+	return ""
+}
+
+// IfFunc executes 'fn' if result of 'expression' is true
+func (b *Builder) IfFunc(expression bool, fn func()) *struct{} {
 	if expression {
 		fn()
 	}
@@ -175,13 +184,14 @@ func (b *Builder) If(expression bool, fn func()) *struct{} {
 	return nil
 }
 
-// IfString executes 'fn' if result of 'expression' is true
-func (b *Builder) IfString(expression bool, s string) string {
-	if expression {
-		return s
-	}
+// Foreach extracts array from JSON data for provided 'path' and executes 'fn' for each array member
+func (b *Builder) Foreach(data []byte, path string, fn func(key, value gjson.Result)) *struct{} {
+	gjson.GetBytes(data, path).ForEach(func(key, value gjson.Result) bool {
+		fn(key, value)
+		return true
+	})
 
-	return ""
+	return nil
 }
 
 // GetString extracts string value from JSON data given provided path

@@ -27,7 +27,7 @@ func (v *View) Render(b *fhtml.Builder) *struct{} {
 					b.HTMLInline("Hello World ", val.Raw),
 				),
 				NewComponent().Render(b, val.Raw),
-				b.If(b.GetBool(v.Data(), `show`), func() {
+				b.IfFunc(b.GetBool(v.Data(), `show`), func() {
 					b.Tag("p", b.Class("subtitle")).Content(
 						b.HTML(`My first website with <strong>Bulma</strong>!`),
 					)

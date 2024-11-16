@@ -2,10 +2,20 @@ package fhtml
 
 type (
 	BaseLayout struct {
-		layout  Renderer
+		data    []byte
 		content Renderer
+		layout  Renderer
 	}
 )
+
+func (l *BaseLayout) Data() []byte {
+	return l.data
+}
+
+func (l *BaseLayout) SetData(data []byte) Renderer {
+	l.data = data
+	return l
+}
 
 func (l *BaseLayout) Content() Renderer {
 	return l.content
