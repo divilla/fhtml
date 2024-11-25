@@ -17,6 +17,7 @@ func main() {
 	v := NewView(j)
 
 	b := fhtml.NewBuilder()
-	fmt.Println(string(v.Run(b)))
+	v.Run(b)
+	fmt.Println(string(b.Bytes()))
 	b.Close()
 }

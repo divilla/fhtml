@@ -21,7 +21,8 @@ func Benchmark_Render(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		view := NewView(data)
 		builder := fhtml.NewBuilder()
-		r = view.Run(builder)
+		view.Run(builder)
+		r = builder.Bytes()
 		builder.Close()
 	}
 

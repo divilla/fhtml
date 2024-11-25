@@ -7,15 +7,13 @@ type (
 	}
 )
 
-func (v *BaseView) Run(b *Builder) []byte {
+func (v *BaseView) Run(b *Builder) {
 	layout := Renderer(v)
 	for layout.Layout() != nil {
 		layout = layout.Layout()
 	}
 
 	layout.Render(b)
-
-	return b.Bytes()
 }
 
 func (v *BaseView) Data() []byte {
