@@ -72,7 +72,7 @@ func (b *Builder) A(attr ...string) *Builder {
 	if len(attr) == 1 && attr[0] != "" {
 		b.WriteStringAfter(" ", attr[0])
 	}
-	if len(attr) > 1 && attr[0] != "" {
+	if len(attr) > 1 && attr[0] != "" && attr[1] != "" {
 		b.WriteStringAfter(" ", attr[0], `="`, attr[1], `"`)
 	}
 
