@@ -23,7 +23,7 @@ func (v *View) Render(b *fhtml.Builder) *struct{} {
 	return b.Tag("section", b.Class("section")).Content(
 		b.Foreach(v.Data(), `nums`, func(key, val gjson.Result) {
 			b.Tag("div").Content(
-				b.Tag("h1", b.Class("title")).ContentInline(
+				b.Tag("h1", b.Class("title").A("id", "")).ContentInline(
 					b.HTMLInline("Hello World ", val.Raw),
 				),
 				NewComponent().Render(b, val.Raw),
