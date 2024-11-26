@@ -81,16 +81,20 @@ func (b *Builder) A(attr ...string) *Builder {
 
 // Class writes HTML class attribute
 func (b *Builder) Class(vals ...string) *Builder {
-	b.WriteStringAfter(` class="`)
-	for key, val := range vals {
+	var valids []string
+	for _, val := range vals {
 		if val == "" {
 			continue
 		}
-		if key > 0 {
-			b.WriteStringAfter(" ")
-		}
-		b.WriteStringAfter(val)
+		valids = append(valids, val)
 	}
+
+	if len(valids) == 0 {
+		return b
+	}
+
+	b.WriteStringAfter(` class="`)
+	b.WriteStringAfter(strings.Join(valids, " "))
 	b.WriteStringAfter(`"`)
 
 	return b
