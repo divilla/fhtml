@@ -35,7 +35,6 @@ func (l *BaseLayout) SetLayout(layout Renderer) Renderer {
 	return l
 }
 
-func (l *BaseLayout) Render(b *Builder) *struct{} {
-	_ = b
-	return nil
+func (l *BaseLayout) Render(b *Builder) *Builder {
+	return b
 }

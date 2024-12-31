@@ -17,17 +17,19 @@ func NewOuterLayout(content fhtml.Renderer) *OuterLayout {
 	return l
 }
 
-func (l *OuterLayout) Render(b *fhtml.Builder) *struct{} {
+func (l *OuterLayout) Render(b *fhtml.Builder) *fhtml.Builder {
 	return b.Document(
 		b.HTMLInline(`<!DOCTYPE html>`),
-		b.Tag("html").Content(
-			b.Tag("head").Content(
-				b.TagVoid("meta", b.A("charset", "utf-8")),
-				b.TagVoid("meta", b.A("name", "viewport").A("content", "width=device-width, initial-scale=1")),
-				b.Tag("title").ContentInline(b.HTMLInline(l.title())),
-				b.TagVoid("link", b.A("rel", "stylesheet").A("href", "https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css")),
+		b.Tag("html").Children(
+			b.Tag("head").Children(
+				b.Tag("meta", b.Attr("charset", "utf-8")).Void(),
+				b.Tag("meta", b.Attr("name", "viewport"), b.Attr("content", "width=device-width, initial-scale=1")).Void(),
+				b.Tag("title").ChildrenInline(
+					b.HTMLInline(l.title()),
+				),
+				b.Tag("link", b.Attr("rel", "stylesheet"), b.Attr("href", "https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css")).Void(),
 			),
-			b.Tag("body").Content(
+			b.Tag("body").Children(
 				l.Content().Render(b),
 			),
 		),

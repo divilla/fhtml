@@ -15,6 +15,8 @@ func NewComponent() *Component {
 	return v
 }
 
-func (v *Component) Render(b *fhtml.Builder, nr string) *struct{} {
-	return b.Tag("h1", b.Class("test", "title")).ContentInline(b.HTMLInline("Hello World ", nr))
+func (v *Component) Render(b *fhtml.Builder, nr string) *fhtml.Builder {
+	return b.Tag("h1", b.Class("test", "title")).ChildrenInline(
+		b.HTMLInline("Hello World ", nr),
+	)
 }

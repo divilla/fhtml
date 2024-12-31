@@ -2,8 +2,6 @@ package fhtml
 
 import (
 	"bytes"
-	"strings"
-
 	"github.com/tidwall/sjson"
 
 	"github.com/sym01/htmlsanitizer"
@@ -19,7 +17,6 @@ var (
 type (
 	Builder struct {
 		bb   *bytes.Buffer
-		bba  *bytes.Buffer
 		tags []string
 	}
 
@@ -29,145 +26,113 @@ type (
 // NewBuilder constructs *Builder provided 'data' argument is valid JSON
 func NewBuilder() *Builder {
 	return &Builder{
-		bb:  new(bytes.Buffer),
-		bba: new(bytes.Buffer),
+		bb: new(bytes.Buffer),
 	}
 }
 
 // HTML writes indented raw strings - not sanitized HTML
-func (b *Builder) HTML(tokens ...string) *struct{} {
-	indent(b.bb, len(b.tags))
+func (b *Builder) HTML(tokens ...string) *Builder {
+	b.indent()
 	return b.HTMLInline(tokens...)
 }
 
 // HTMLInline writes raw strings inline - not sanitized HTML
-func (b *Builder) HTMLInline(tokens ...string) *struct{} {
-	for _, token := range tokens {
-		b.bb.WriteString(token)
-	}
-
-	return nil
+func (b *Builder) HTMLInline(tokens ...string) *Builder {
+	b.WriteString(tokens...)
+	return b
 }
 
 // Text writes indented sanitized text
-func (b *Builder) Text(tokens ...string) *struct{} {
-	indent(b.bb, len(b.tags))
-	return b.TextInline(tokens...)
+func (b *Builder) Text(text string) *Builder {
+	b.indent()
+	return b.TextInline(text)
 }
 
 // TextInline writes sanitized text inline
-func (b *Builder) TextInline(tokens ...string) *struct{} {
-	s := strings.Join(tokens, ``)
-	ss, err := htmlsanitizer.SanitizeString(s)
+func (b *Builder) TextInline(text string) *Builder {
+	ss, err := htmlsanitizer.SanitizeString(text)
 	if err != nil {
 		panic(err)
 	}
 	b.bb.WriteString(ss)
 
-	return nil
+	return b
 }
 
-// A writes HTML attribute
-func (b *Builder) A(attr ...string) *Builder {
-	if len(attr) == 1 && attr[0] != "" {
-		b.WriteStringAfter(" ", attr[0])
+// Attr writes HTML attribute
+func (b *Builder) Attr(vals ...string) string {
+	if len(vals) == 0 || vals[0] == "" {
+		return zeroString
 	}
-	if len(attr) > 1 && attr[0] != "" && attr[1] != "" {
-		b.WriteStringAfter(" ", attr[0], `="`, attr[1], `"`)
+	if len(vals) == 1 {
+		return vals[0]
 	}
 
-	return b
+	return ` ` + vals[0] + `="` + vals[1] + `"`
 }
 
 // Class writes HTML class attribute
-func (b *Builder) Class(vals ...string) *Builder {
-	var valids []string
-	for _, val := range vals {
-		if val == "" {
-			continue
+func (b *Builder) Class(vals ...string) string {
+	res := ` class="`
+	for key, val := range vals {
+		if key > 0 {
+			res += " "
 		}
-		valids = append(valids, val)
+		res += val
 	}
+	res += `"`
 
-	if len(valids) == 0 {
-		return b
-	}
-
-	b.WriteStringAfter(` class="`)
-	b.WriteStringAfter(strings.Join(valids, " "))
-	b.WriteStringAfter(`"`)
-
-	return b
+	return res
 }
 
-// Tag is used for writing elements
-func (b *Builder) Tag(tag string, attrs ...any) *Builder {
-	_ = attrs
+// Tag builds HTML element
+func (b *Builder) Tag(tag string, attrs ...string) *Builder {
+	b.indent()
+	b.pushTag(tag)
 
-	indent(b.bb, len(b.tags))
-	b.TagInline(tag)
-
-	return b
+	return b.TagInline(tag, attrs...)
 }
 
-// TagVoid is used for writing void elements
-func (b *Builder) TagVoid(tag string, attrs ...any) *struct{} {
-	_ = attrs
-
-	indent(b.bb, len(b.tags))
-	b.TagInline(tag)
-	popTag(b)
-
-	return nil
-}
-
-// TagInline is used for writing elements without Children
-func (b *Builder) TagInline(tag string, attrs ...any) *Builder {
-	_ = attrs
-
-	b.WriteString(`<`, tag)
-	b.bb.Write(b.bba.Bytes())
+// TagInline builds inline HTML element
+func (b *Builder) TagInline(tag string, attrs ...string) *Builder {
+	b.WriteString(`<` + tag)
+	b.WriteString(attrs...)
 	b.WriteString(`>`)
-	b.tags = append(b.tags, tag)
-	b.bba.Reset()
 
 	return b
 }
 
-// Content is building Element's Children
-func (b *Builder) Content(a ...any) *struct{} {
-	_ = a
+// Children builds child elements
+func (b *Builder) Children(tags ...any) *Builder {
+	_ = tags
 
-	tag := popTag(b)
-	indent(b.bb, len(b.tags))
+	tag := b.popTag()
+	b.indent()
+	b.bb.WriteString(`</` + tag + `>`)
 
-	return b.WriteString(`</`, tag, `>`)
+	return b
 }
 
-// ContentInline is building Element's Children inline
-func (b *Builder) ContentInline(a ...any) *struct{} {
-	_ = a
+// ChildrenInline builds inline child elements
+func (b *Builder) ChildrenInline(tags ...any) *Builder {
+	_ = tags
 
-	tag := popTag(b)
+	tag := b.popTag()
+	b.bb.WriteString(`</` + tag + `>`)
 
-	return b.WriteString(`</`, tag, `>`)
+	return b
 }
 
-// Inline writes raw strings instead of content
-func (b *Builder) Inline(tokens ...string) *struct{} {
-	for _, token := range tokens {
-		b.bb.WriteString(token)
-	}
-
-	tag := popTag(b)
-
-	return b.WriteString(`</`, tag, `>`)
+// Void prevents closing void tab
+func (b *Builder) Void() *Builder {
+	b.popTag()
+	return b
 }
 
 // Document creates base HTML document
-func (b *Builder) Document(a ...any) *struct{} {
-	_ = a
-	return nil
+func (b *Builder) Document(tags ...any) *Builder {
+	_ = tags
+	return b
 }
 
 // If executes 'fn' if result of 'expression' is true
@@ -236,25 +201,17 @@ func (b *Builder) WriteString(s ...string) *struct{} {
 	return nil
 }
 
-// WriteStringAfter returns string form Buffer
-func (b *Builder) WriteStringAfter(s ...string) *struct{} {
-	for _, v := range s {
-		_, err := b.bba.WriteString(v)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return nil
-}
-
 // Close destroys Buffer
 func (b *Builder) Close() {
 	b.bb.Reset()
 	b.bb = nil
 }
 
-func popTag(b *Builder) string {
+func (b *Builder) pushTag(tag string) {
+	b.tags = append(b.tags, tag)
+}
+
+func (b *Builder) popTag() string {
 	l := len(b.tags) - 1
 	tag := b.tags[l]
 	b.tags = b.tags[:l]
@@ -262,17 +219,18 @@ func popTag(b *Builder) string {
 	return tag
 }
 
-func indent(bb *bytes.Buffer, ind int) {
-	if val, ok := indentCache[ind]; ok {
-		bb.WriteString(val)
+func (b *Builder) indent() {
+	indent := len(b.tags)
+
+	if val, ok := indentCache[indent]; ok {
+		b.bb.WriteString(val)
 		return
 	}
 
-	s := "\n"
-	for j := 0; j < ind; j++ {
-		s += Indent
+	val := "\n"
+	for j := 0; j < indent; j++ {
+		val += Indent
 	}
-	indentCache[ind] = s
-
-	bb.WriteString(s)
+	indentCache[indent] = val
+	b.bb.WriteString(val)
 }

@@ -1,5 +1,7 @@
 package fhtml
 
+var zeroString string
+
 type (
 	// Renderer is interface for views and layouts
 	Renderer interface {
@@ -7,7 +9,7 @@ type (
 		SetData(data []byte) Renderer
 		Layout() Renderer
 		SetLayout(layout Renderer) Renderer
-		Render(b *Builder) *struct{}
+		Render(b *Builder) *Builder
 	}
 )
 

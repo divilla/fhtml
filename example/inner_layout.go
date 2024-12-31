@@ -15,8 +15,8 @@ func NewInnerLayout(content fhtml.Renderer) *InnerLayout {
 	return l
 }
 
-func (l *InnerLayout) Render(b *fhtml.Builder) *struct{} {
-	return b.Tag("div", b.Class("container")).Content(
+func (l *InnerLayout) Render(b *fhtml.Builder) *fhtml.Builder {
+	return b.Tag("div", b.Class("container")).Children(
 		l.Content().Render(b),
 	)
 }

@@ -34,7 +34,7 @@ func (v *BaseView) SetLayout(layout Renderer) Renderer {
 	return v
 }
 
-func (v *BaseView) Render(b *Builder) *struct{} {
+func (v *BaseView) Render(b *Builder) *Builder {
 	_ = b
 	return nil
 }
